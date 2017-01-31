@@ -40,25 +40,29 @@ refugees.usa <- select(refugees.usa, year, usa = value)
 # Add `type="o"` as a parameter to draw a line
 plot(refugees.usa, type="o")
 
-
 # Pick one other country in the world (e.g., Turkey).
 # How many *refugees* from Syria settled in that country in all years in the data set (2000 through 2013)?
 # Is it more or less than the USA? (Hint: join the tables and add a new column!)
-# Hint: To compare the values, you'll need to convert the data (which is a string) to a number; try using `as.numeric()`
-
+# Hint: To compare the values, you'll need to convert the data (which is a string) to a number; 
+# try using `as.numeric()`
 query.params <- list(country_of_residence = "TUR", country_of_origin = "SYR", population_type_code = "RF")
 response <- GET("http://data.unhcr.org/api/stats/time_series_all_years.json?", query = query.params)
 refugees.other <- fromJSON(content(response,"text"))
 refugees.other <- select(refugees.other, year, other = value)
 refugees.other
 
-left_join(refugees.usa, refugees.other, by="year") %>%
+left_join(refugees.usa, refugees.other, by ="year") %>%
   mutate(usa = as.numeric(usa), other = as.numeric(other)) %>%
   mutate(usa.more = usa > other)
 
 ## Bonus (not in solution):
 # How many of the refugees in 2013 were children (between 0 and 4 years old)?
-
+query.params <- list(year = "2013", population_type_code = "RF")
+response <- GET("http://data.unhcr.org/api/stats/time_series_all_years.json?", query = query.params)
+refugees.children <- fromJSON(content(response,"text"))
+refugees.children <- filter(refugees.children,  age >= 0 & age <= 4)
+count <- nrow(refugees.children)
+count
 
 ## Extra practice (but less interesting results)
 # How many total people applied for asylum in the USA in 2013?
@@ -68,7 +72,6 @@ query.params <- list(country_of_asylum = "USA", year = 2013)
 response <- GET("http://data.unhcr.org/api/stats/asylum_seekers.json", query = query.params)
 usa.seekers <- fromJSON(content(response,"text"))
 select(usa.seekers, applied_during_year) %>%
-  filter(is.na(applied_during_year) == FALSE) %>%  # remove NA values
-  mutate(applied_during_year = as.numeric(applied_during_year)) %>%  # make numbers
+  filter(is.na(applied_during_year) == FALSE) %>%  
+  mutate(applied_during_year = as.numeric(applied_during_year)) %>%  
   summarize(sum(applied_during_year))
-
