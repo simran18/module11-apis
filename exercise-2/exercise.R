@@ -7,31 +7,23 @@ library("jsonlite")
 # Create a `base.uri` variable that holds the base uri. You wil then paste endpoints to this base.
 base.uri <- "https://api.spotify.com"
 
-
 ## As you may have noticed, it often takes multiple queries to retrieve the desired information.
 ## This is a perfect situation in which writing a function will allow you to better structure your
 ## code, and give a name to a repeated task!
 # Define a function `TopTrackSearch` that takes in an artist name as an argument,
 # and returns the top 10 tracks (in the US) by that artist
 TopTrackSearch <- function(artist) {
-  # Artist info
   resource <- "/v1/search"
   uri = paste0(base.uri, resource)
   query.params <- list(q = artist, type = "artist")
-  
   response <- GET(uri, query = query.params)
-  
   artist.info <- fromJSON(content(response, "text"))
   artist.id <- artist.info$artists$items$id[1]
-  
-  # Get albums
   resource <- paste0("/v1/artists/",artist.id,"/top-tracks")
   uri = paste0(base.uri, resource)
   query.params <- list(country="US")
   response <- GET(uri, query = query.params)
-  
   top.tracks <- fromJSON(content(response, "text"))
-  
   return(top.tracks$tracks)
 }
 
@@ -59,9 +51,7 @@ SpotifySearch <- function(type, string) {
   resource <- "/v1/search"
   uri = paste0(base.uri, resource)
   query.params <- list(q = string, type = type)
-  
   response <- GET(uri, query = query.params)
-  
   return(flatten(fromJSON(content(response,"text"))))
 }
 
